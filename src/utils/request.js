@@ -75,3 +75,37 @@ export function delrights(roleid,rightid){
 export function addrights(id,data){
     return axios.post(`roles/${id}/rights`,data)
 }
+
+// 获取商品列表
+export function getgoods(params){
+    return axios.get('/goods',{params})
+}
+// 删除商品
+export function deleted(id){
+    return axios.delete(`/goods/${id}`)
+}
+// 获取商品数据
+export function good(id){
+    return axios.get(`/goods/${id}`)
+}
+// 编辑商品提交
+export function upgood(id,data){
+    return axios.put(`/goods/${id}`,data)
+}
+// 商品分类数据列表
+export function getcategories(){
+    return axios.get('/categories')
+}
+// 获取订单列表
+export function getorders(params){
+    return axios.get('/orders',{params})
+}
+// 获取订单物流信息
+export function looks(id) { 
+    return axios.get(`/kuaidi/${id}`)
+ }
+
+// 获取表数据
+export function getChart(){
+    return axios.get('/reports/type/1')
+}

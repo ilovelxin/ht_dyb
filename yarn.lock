@@ -8124,6 +8124,11 @@ vue-cli-plugin-element@^1.0.1:
   resolved "https://registry.npm.taobao.org/vue-cli-plugin-element/download/vue-cli-plugin-element-1.0.1.tgz#34e58fb65b36cf59afaf14f503288e5e578b1554"
   integrity sha1-NOWPtls2z1mvrxT1AyiOXleLFVQ=
 
+vue-cli-plugin-wyz-echarts@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.npm.taobao.org/vue-cli-plugin-wyz-echarts/download/vue-cli-plugin-wyz-echarts-1.0.5.tgz#d79da0f361f0008c11e4011a6cbf5672881a8498"
+  integrity sha1-152g82HwAIwR5AEabL9WcogahJg=
+
 vue-hot-reload-api@^2.3.0:
   version "2.3.4"
   resolved "https://registry.npm.taobao.org/vue-hot-reload-api/download/vue-hot-reload-api-2.3.4.tgz#532955cc1eb208a3d990b3a9f9a70574657e08f2"

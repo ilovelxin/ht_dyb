@@ -4,7 +4,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import './plugins/element.js'
-
+import echarts from 'echarts'           // 引入echarts组件
+Vue.prototype.$echarts = echarts        //  在Vue原型上挂载$echarts方法
 Vue.config.productionTip = false
 
 // 路由全局守卫

@@ -129,13 +129,13 @@ export default {
   height: 100%;
 }
 .el-header {
-  background-color: #b3c0d1;
-  color: #333;
+  background-color: #373d41;
+  color: #fff;
   text-align: center;
 }
 .el-aside {
-  background-color: #d3dce6;
-  color: #333;
+  background-color: #333744;
+  color: #fff;
   height: 100%;
 }
 .el-main {
