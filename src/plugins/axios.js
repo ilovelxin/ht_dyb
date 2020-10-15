@@ -2,6 +2,7 @@
 
 import Vue from 'vue';
 import axios from "axios";
+import { Loading } from 'element-ui';
 
 // 公共请求路径
 // axios.defaults.baseURL = `http://127.0.0.1:8888/api/private/v1/`;
@@ -31,9 +32,15 @@ _axios.interceptors.request.use(
 // Add a response interceptor
 _axios.interceptors.response.use(
   function (response) {
-    if (response.data.meta.status == 200) {
-
-    }
+    // let load = Loading.service({
+    //   lock: true,
+    //   text: 'Loading',
+    //   spinner: 'el-icon-loading',
+    //   background: 'rgba(0, 0, 0, 0.7)'
+    // });
+    // if (response.data.meta.status == 200 || response.data.meta.status == 201 || response.data.meta.status == 204) {
+    //   load.close();
+    // }
     return response
   },
   function (error) {

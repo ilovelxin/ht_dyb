@@ -29,6 +29,7 @@ const routes = [
       {path:"categories",name:"Categories",component:()=>import('../Home/Categories')},
       {path:"orders",name:"Orders",component:()=>import('../Home/Orders')},
       {path:"reports",name:"Reports",component:()=>import('../Home/Reports')},
+      {path:"addgoods",name:"AddGoods",component:()=>import('../Home/AddGoods')},
     ]
   }
 ]

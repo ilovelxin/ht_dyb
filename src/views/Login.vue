@@ -124,6 +124,8 @@ export default {
   height: 150px;
   border-radius: 50%;
   top: -100px;
+  left: 50%;
+  margin-left: -75px;
   border: 10px solid #fff;
   background: #eee;
   box-shadow: 0px 0px 10px #eee;

@@ -225,7 +225,7 @@ export default {
       // 修改弹框是否打开
       dialogFormUpdata: false,
       // 修改用户的信息
-      userObj:{}
+      userObj: {},
     };
   },
   created() {},
@@ -251,10 +251,22 @@ export default {
       this.setUsers(this.userobj);
     },
     // 添加用户
-    add() {
+    async add() {
       this.dialogVisible = false;
-      adduser(this.ruleForm);
-      this.setUsers(this.userobj);
+      let { data: res } = await adduser(this.ruleForm);
+      if (res.meta.status == 200) {
+        this.$message({
+          type: "success",
+          message: res.meta.msg,
+        });
+        this.setUsers();
+      } else {
+        this.$message({
+          type: "error",
+          message: res.meta.msg,
+        });
+      }
+      console.log(res);
     },
     // 取消添加用户
     noadd() {
@@ -295,7 +307,7 @@ export default {
     // 取消修改用户信息
     noUpdata() {
       this.dialogFormUpdata = false;
-      this.userObj={}
+      this.userObj = {};
     },
     // 删除单个用户
     dels(id) {

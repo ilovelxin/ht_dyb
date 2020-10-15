@@ -104,6 +104,11 @@ export function getorders(params){
 export function looks(id) { 
     return axios.get(`/kuaidi/${id}`)
  }
+// 商品分类
+export let getCategories = data => axios.get(`/categories`)
+
+// 分类参数
+
 
 // 获取表数据
 export function getChart(){

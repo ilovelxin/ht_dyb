@@ -25,7 +25,7 @@
           ></el-button>
         </el-input>
         <!-- 添加商品 -->
-        <el-button type="primary">添加用户</el-button>
+        <el-button type="primary" @click="$router.push('/home/addgoods')">添加商品</el-button>
       </div>
       <!-- 商品列表表格 -->
       <el-table :data="Goods.goods" border style="width: 100%" stripe>
