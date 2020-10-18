@@ -160,7 +160,6 @@ export default {
     async getGoods() {
       let { data } = await getgoods(this.paramsobj);
       this.Goods = data.data;
-      console.log(this.Goods);
     },
     // 时间过滤
     setTime(row, cloum) {

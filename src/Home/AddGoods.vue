@@ -30,15 +30,14 @@
         <el-step title="商品属性"></el-step>
         <el-step title="商品图片"></el-step>
         <el-step title="商品内容"></el-step>
-        <el-step title="完成"></el-step>
       </el-steps>
 
       <!-- tab栏区域 -->
       <el-tabs
         :tab-position="'left'"
         v-model="activeIndex"
-        :before-leave="beforeLeave"
         style="height: 100%"
+        :before-leave="beforeLeave"
       >
         <!-- 基本信息 -->
         <el-tab-pane label="基本信息" name="0">
@@ -130,26 +129,49 @@
                 autocomplete="off"
               ></el-input>
             </el-form-item>
-
-            <el-select v-model="value" placeholder="请选择">
-              <el-option label="北京" value="北京"> </el-option>
-              <el-option label="北京" value="北京"> </el-option>
-            </el-select>
+            <p>商品分类</p>
+            <el-cascader
+              v-model="value"
+              :options="options"
+              @change="handleChange"
+              :props="props"
+            ></el-cascader>
           </el-form>
         </el-tab-pane>
-        <el-tab-pane label="商品参数" name="1">商品参数</el-tab-pane>
-        <el-tab-pane label="商品属性" name="2">商品属性</el-tab-pane>
-        <el-tab-pane label="商品图片" name="3">商品图片</el-tab-pane>
-        <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+        <el-tab-pane label="商品参数" name="1">
+          <p v-for="(item, index) in only" :key="index">{{ item.attr_name }}</p>
+        </el-tab-pane>
+        <el-tab-pane label="商品属性" name="2">
+          <p v-for="(item, index) in many" :key="index">{{ item.attr_name }}</p>
+        </el-tab-pane>
+        <el-tab-pane label="商品图片" name="3">
+          <el-upload
+            class="avatar-uploader"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-tab-pane>
+        <el-tab-pane label="商品内容" name="4">
+          <el-input v-model="goods.goods_introduce"></el-input>
+          <el-button type="primary" @click="add">添加</el-button>
+        </el-tab-pane>
       </el-tabs>
     </el-card>
   </div>
 </template>
 
 <script>
+import { getcategories, getparams, addgoods } from "../utils/request";
 export default {
   data() {
     return {
+      // 图片路径
+      imageUrl: "",
       // 步骤条进度
       activeIndex: "0",
       //   商品信息
@@ -158,11 +180,94 @@ export default {
         goods_price: "",
         goods_weight: "",
         goods_number: "",
+        goods_cat: "",
+        pics: {
+          pic: this.imageUrl || "",
+        },
+        goods_introduce: "",
+        attrs: [],
       },
+      value: "",
+      props: {
+        label: "cat_name",
+        value: "cat_id",
+      },
+      // 分类列表
+      options: [],
+      // 动态参数
+      only: [],
+      many: [],
     };
   },
   methods: {
-    beforeLeave(activeName, oldActiveName) {},
+    handleChange(value) {
+      console.log(value);
+      this.goods.goods_cat = value.join(",");
+      // console.log(this.goods.goods_cat);
+    },
+    // 获取分类
+    async getCategories() {
+      let { data: res } = await getcategories();
+      this.options = res.data;
+      console.log(this.options);
+    },
+    // 进行下一步的时候进行 验证
+    async beforeLeave(index) {
+      if (this.goods.goods_cat == "") return false;
+      // 获取属性和参数
+      if (index == 1) {
+        let { data: res } = await getparams(
+          this.goods.goods_cat[this.goods.goods_cat.length - 1],
+          "only"
+        );
+        this.only = res.data;
+        console.log(res);
+      }
+      if (index == 2) {
+        let { data: res } = await getparams(
+          this.goods.goods_cat[this.goods.goods_cat.length - 1],
+          "many"
+        );
+        this.many = res.data;
+      }
+    },
+    // 上传图片的路径
+    handleAvatarSuccess(res, file) {
+      this.imageUrl = URL.createObjectURL(file.raw);
+      console.log(this.imageUrl);
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === "image/jpeg";
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        this.$message.error("上传头像图片只能是 JPG 格式!");
+      }
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return isJPG && isLt2M;
+    },
+    async add() {
+      console.log(this.goods);
+      let { data: res } = await addgoods(this.goods);
+      if (res.meta.status == 201) {
+        this.$router.push("/home/goods");
+        this.$message({
+          type: "success",
+          message: res.meta.msg,
+        });
+      } else {
+        this.$message({
+          type: "error",
+          message: res.meta.msg,
+        });
+      }
+      // console.log(res);
+    },
+  },
+  mounted() {
+    this.getCategories();
   },
 };
 </script>
@@ -173,5 +278,28 @@ export default {
 }
 .el-steps {
   margin-top: 10px;
+}
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
 }
 </style>
