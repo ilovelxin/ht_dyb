@@ -254,7 +254,7 @@ export default {
     async add() {
       this.dialogVisible = false;
       let { data: res } = await adduser(this.ruleForm);
-      if (res.meta.status == 200) {
+      if (res.meta.status == 201) {
         this.$message({
           type: "success",
           message: res.meta.msg,
@@ -358,6 +358,7 @@ export default {
         this.ruleForm.email = "";
         this.ruleForm.mobile = "";
       },
+      deep:true
     },
   },
 };

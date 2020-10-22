@@ -71,7 +71,7 @@ export function rights(data) {
 export function delrights(roleid, rightid) {
     return axios.delete(`roles/${roleid}/rights/${rightid}`)
 }
-// 角色权限分配
+// 角色权限分配 
 export function addrights(id, data) {
     return axios.post(`roles/${id}/rights`, data)
 }
@@ -146,9 +146,13 @@ export function params(data) {
 }
 // 确认修改参数
 export function okupparams(data) {
-    return axios.put(`categories/${data.cat_id}/attributes/${data.attr_id}`, { attr_name: data.attr_name, attr_sel: data.attr_sel, attr_vals:'' })
+    return axios.put(`categories/${data.cat_id}/attributes/${data.attr_id}`, { attr_name: data.attr_name, attr_sel: data.attr_sel, attr_vals: '' })
 }
 // 添加商品
-export function addgoods(params){
-    return axios.post('/goods',params)
+export function addgoods(params) {
+    return axios.post('/goods', params)
+}
+// 删除和添加参数
+export function putparams(data) {
+    return axios.put(`categories/${data.cat_id}/attributes/${data.attr_id}`, data)
 }

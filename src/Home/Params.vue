@@ -35,7 +35,38 @@
             >添加参数</el-button
           >
           <el-table :data="tabarr" style="width: 100%">
-            <el-table-column type="expand"> </el-table-column>
+            <!-- tag标签 -->
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-tag
+                  v-show="scope.row.attr_vals != ''"
+                  :key="index"
+                  v-for="(item, index) in scope.row.attr_vals.split(',')"
+                  closable
+                  :disable-transitions="false"
+                  @close="handleClose(scope.row, index)"
+                >
+                  {{ item }}
+                </el-tag>
+                <el-input
+                  class="input-new-tag"
+                  v-if="inputVisible"
+                  v-model="inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                >
+                </el-input>
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                  >+ New Tag</el-button
+                >
+              </template>
+            </el-table-column>
             <el-table-column label="分类参数ID" prop="attr_id">
             </el-table-column>
             <el-table-column label="分类参数名称" prop="attr_name">
@@ -65,7 +96,37 @@
             >添加属性</el-button
           >
           <el-table :data="tabarr" style="width: 100%">
-            <el-table-column type="expand"> </el-table-column>
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-tag
+                  v-show="scope.row.attr_vals != ''"
+                  :key="index"
+                  v-for="(item, index) in scope.row.attr_vals.split(',')"
+                  closable
+                  :disable-transitions="false"
+                  @close="handleClose(scope.row, index)"
+                >
+                  {{ item }}
+                </el-tag>
+                <el-input
+                  class="input-new-tag"
+                  v-if="inputVisible"
+                  v-model="inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                >
+                </el-input>
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                  >+ New Tag</el-button
+                >
+              </template>
+            </el-table-column>
             <el-table-column label="分类参数ID" prop="attr_id">
             </el-table-column>
             <el-table-column label="分类参数名称" prop="attr_name">
@@ -122,6 +183,7 @@ import {
   delparams,
   params,
   okupparams,
+  putparams,
 } from "../utils/request";
 export default {
   name: "",
@@ -139,7 +201,7 @@ export default {
       // 参数id
       id: "",
       // 属性还是参数
-      sel: "only",
+      sel: "many",
       // 添加的input
       inputvalue: "",
       // 是否打开添加的弹框
@@ -150,6 +212,9 @@ export default {
       upobj: {
         attr_name: "",
       },
+      // tag标签
+      inputVisible: false,
+      inputValue: "",
     };
   },
   created() {},
@@ -164,6 +229,7 @@ export default {
     // 封装获取参数列表的接口
     async getParams(id, sel) {
       let { data: res } = await getparams(id, sel);
+      // console.log(res);
       if (res.meta.status == 200) {
         this.tabarr = res.data;
         this.$message({
@@ -187,10 +253,10 @@ export default {
     handleClick(tab, event) {
       // console.log(tab, event);
       if (tab.index == 0) {
-        this.sel = "only";
+        this.sel = "many";
         this.getParams(this.id, this.sel);
       } else {
-        this.sel = "many";
+        this.sel = "only";
         this.getParams(this.id, this.sel);
       }
     },
@@ -260,6 +326,48 @@ export default {
         this.getParams(this.id, this.sel);
       }
     },
+    // tag标签
+    // 删除 tag 标签
+    async handleClose(tag, index) {
+      let arr = tag.attr_vals.split(",");
+      arr.splice(index, 1);
+      let obj = {
+        cat_id: tag.cat_id,
+        attr_name: tag.attr_name,
+        attr_sel: tag.attr_sel,
+        attr_vals: arr.join(","),
+        attr_id: tag.attr_id,
+      };
+      let { data: res } = await putparams(obj);
+      // console.log(res);
+      this.getParams(this.id, this.sel);
+    },
+    // 添加tag标签的input框打开
+    showInput(arr) {
+      // console.log(arr);
+      this.inputVisible = true;
+      this.$nextTick((_) => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+    // 添加tag标签的input框关闭
+    async handleInputConfirm(obj) {
+      let inputValue = this.inputValue;
+      if (inputValue) {
+        obj.attr_vals = obj.attr_vals + "," + inputValue;
+      }
+      // console.log(obj);
+      let { data: res } = await putparams(obj);
+      if (res.meta.status == 200) {
+        this.$message({
+          type: "success",
+          message: res.meta.msg,
+        });
+      }
+      this.inputVisible = false;
+      this.inputValue = "";
+      this.getParams(this.id, this.sel);
+    },
   },
 };
 </script>
@@ -278,5 +386,20 @@ export default {
 }
 .el-tabs {
   margin-top: 15px;
+}
+.el-tag + .el-tag {
+  margin-left: 10px;
+}
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
 }
 </style>

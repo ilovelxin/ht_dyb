@@ -19,9 +19,10 @@
       <el-table
         :data="tableData"
         style="width: 100%"
-        row-key="cat_name"
+        row-key="cat_id"
         border
         :tree-props="{ children: 'children' }"
+        
       >
         <el-table-column type="index" label="#" width="50"> </el-table-column>
         <el-table-column prop="cat_name" label="分类名称" min-width="100">

@@ -60,9 +60,9 @@
                 autocomplete="off"
               ></el-input>
             </el-form-item>
-            <!-- 商品价格 -->
+            <!-- 商品数量 -->
             <el-form-item
-              label="价格"
+              label="数量"
               prop="goods_number"
               :rules="[
                 {
@@ -83,9 +83,9 @@
                 autocomplete="off"
               ></el-input>
             </el-form-item>
-            <!-- 商品数量 -->
+            <!-- 商品重量 -->
             <el-form-item
-              label="价格"
+              label="重量"
               prop="goods_weight"
               :rules="[
                 {
@@ -106,7 +106,7 @@
                 autocomplete="off"
               ></el-input>
             </el-form-item>
-            <!-- 商品重量 -->
+            <!-- 商品价格 -->
             <el-form-item
               label="价格"
               prop="goods_price"
@@ -138,27 +138,85 @@
             ></el-cascader>
           </el-form>
         </el-tab-pane>
+        <!-- 商品参数 -->
         <el-tab-pane label="商品参数" name="1">
-          <p v-for="(item, index) in only" :key="index">{{ item.attr_name }}</p>
+          <div v-for="(item, index) in only" :key="index">
+            <h3>{{ item.attr_name }}</h3>
+            <el-checkbox-group
+              @change="checkedChang"
+              :value="item.attr_vals.split(',')"
+            >
+              <el-checkbox
+                v-for="(t, i) in item.attr_vals.split(',')"
+                :key="i"
+                :label="t"
+                border
+                size="small"
+                >{{ t }}</el-checkbox
+              >
+            </el-checkbox-group>
+          </div>
         </el-tab-pane>
+        <!-- 商品属性 -->
         <el-tab-pane label="商品属性" name="2">
-          <p v-for="(item, index) in many" :key="index">{{ item.attr_name }}</p>
+          <div v-for="(item, index) in many" :key="index">
+            <p style="margin: 20px 0 5px 0">{{ item.attr_name }}</p>
+            <el-input
+              v-model="item.attr_vals"
+              placeholder="请输入内容"
+            ></el-input>
+          </div>
         </el-tab-pane>
+        <!-- 商品图片 -->
         <el-tab-pane label="商品图片" name="3">
-          <el-upload
-            class="avatar-uploader"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
-          >
-            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          <el-upload action="#" list-type="picture-card" :auto-upload="false">
+            <i slot="default" class="el-icon-plus"></i>
+            <div slot="file" slot-scope="{ file }">
+              <img
+                class="el-upload-list__item-thumbnail"
+                :src="file.url"
+                alt=""
+              />
+              <!-- 操作 -->
+              <span class="el-upload-list__item-actions">
+                <!-- 查看 -->
+                <span
+                  class="el-upload-list__item-preview"
+                  @click="handlePictureCardPreview(file)"
+                >
+                  <i class="el-icon-zoom-in"></i>
+                </span>
+                <!-- 下载 -->
+                <span
+                  v-if="!disabled"
+                  class="el-upload-list__item-delete"
+                  @click="handleDownload(file)"
+                >
+                  <i class="el-icon-download"></i>
+                </span>
+                <!-- 删除 -->
+                <span
+                  v-if="!disabled"
+                  class="el-upload-list__item-delete"
+                  @click="handleRemove(file)"
+                >
+                  <i class="el-icon-delete"></i>
+                </span>
+              </span>
+            </div>
           </el-upload>
         </el-tab-pane>
+        <!-- 商品内容 -->
         <el-tab-pane label="商品内容" name="4">
-          <el-input v-model="goods.goods_introduce"></el-input>
-          <el-button type="primary" @click="add">添加</el-button>
+          <quill-editor
+            v-model="goods.goods_introduce"
+            :options="editorOption"
+            @blur="onEditorBlur($event)"
+            @focus="onEditorFocus($event)"
+            @change="onEditorChange($event)"
+          >
+          </quill-editor>
+          <el-button type="primary" @click="add" class="add">添加</el-button>
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -167,11 +225,14 @@
 
 <script>
 import { getcategories, getparams, addgoods } from "../utils/request";
+import { quillEditor } from "vue-quill-editor";
 export default {
   data() {
     return {
       // 图片路径
-      imageUrl: "",
+      dialogImageUrl: "",
+      dialogVisible: false,
+      disabled: false,
       // 步骤条进度
       activeIndex: "0",
       //   商品信息
@@ -182,7 +243,7 @@ export default {
         goods_number: "",
         goods_cat: "",
         pics: {
-          pic: this.imageUrl || "",
+          pic: "",
         },
         goods_introduce: "",
         attrs: [],
@@ -197,11 +258,14 @@ export default {
       // 动态参数
       only: [],
       many: [],
+      good_cat: [],
+      // 文本框
+      editorOption: {},
     };
   },
   methods: {
     handleChange(value) {
-      console.log(value);
+      this.good_cat = value;
       this.goods.goods_cat = value.join(",");
       // console.log(this.goods.goods_cat);
     },
@@ -209,45 +273,51 @@ export default {
     async getCategories() {
       let { data: res } = await getcategories();
       this.options = res.data;
-      console.log(this.options);
     },
     // 进行下一步的时候进行 验证
     async beforeLeave(index) {
-      if (this.goods.goods_cat == "") return false;
+      if (this.goods.goods_cat == " ") return false;
       // 获取属性和参数
       if (index == 1) {
         let { data: res } = await getparams(
-          this.goods.goods_cat[this.goods.goods_cat.length - 1],
-          "only"
+          this.good_cat[this.good_cat.length - 1],
+          "many"
         );
         this.only = res.data;
-        console.log(res);
+        res.data.forEach((item) => {
+          this.goods.attrs.push({
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals,
+          });
+        });
       }
       if (index == 2) {
         let { data: res } = await getparams(
-          this.goods.goods_cat[this.goods.goods_cat.length - 1],
-          "many"
+          this.good_cat[this.good_cat.length - 1],
+          "only"
         );
         this.many = res.data;
+        res.data.forEach((item) => {
+          this.goods.attrs.push({
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals,
+          });
+        });
       }
     },
     // 上传图片的路径
-    handleAvatarSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw);
-      console.log(this.imageUrl);
+    handleRemove(file) {
+      console.log(file);
     },
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
-      const isLt2M = file.size / 1024 / 1024 < 2;
-
-      if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG 格式!");
-      }
-      if (!isLt2M) {
-        this.$message.error("上传头像图片大小不能超过 2MB!");
-      }
-      return isJPG && isLt2M;
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url;
+      this.goods.pics.pic=file.url
+      this.dialogVisible = true;
     },
+    handleDownload(file) {
+      console.log(file);
+    },
+    // 添加商品
     async add() {
       console.log(this.goods);
       let { data: res } = await addgoods(this.goods);
@@ -264,6 +334,22 @@ export default {
         });
       }
       // console.log(res);
+    },
+    // 文本框事件
+    onEditorBlur(editor) {
+      //失去焦点事件
+    },
+    onEditorFocus(editor) {
+      //获得焦点事件
+    },
+    onEditorChange({ editor, html, text }) {
+      //编辑器文本发生变化
+      //this.content可以实时获取到当前编辑器内的文本内容
+      // console.log(this.content);
+    },
+    // 商品参数多选
+    checkedChang(value) {
+      console.log(value);
     },
   },
   mounted() {
@@ -301,5 +387,17 @@ export default {
   width: 178px;
   height: 178px;
   display: block;
+}
+.el-checkbox-group {
+  margin-top: 15px;
+}
+.quill-editor {
+  min-height: 300px;
+}
+.ql-editor {
+  height: 300px;
+}
+.add {
+  margin-top: 10px;
 }
 </style>

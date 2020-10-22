@@ -1,8 +1,7 @@
 "use strict";
 
-import Vue from 'vue';
 import axios from "axios";
-import { Loading } from 'element-ui';
+import $store from '../store/index'
 
 // 公共请求路径
 // axios.defaults.baseURL = `http://127.0.0.1:8888/api/private/v1/`;
@@ -17,10 +16,13 @@ let config = {
 
 const _axios = axios.create(config);
 
+let load;
+
 _axios.interceptors.request.use(
   function (config) {
     // Do something before request is sent
     config.headers.Authorization = sessionStorage.getItem('token')
+    $store.state.load=true
     return config;
   },
   function (error) {
@@ -32,15 +34,7 @@ _axios.interceptors.request.use(
 // Add a response interceptor
 _axios.interceptors.response.use(
   function (response) {
-    // let load = Loading.service({
-    //   lock: true,
-    //   text: 'Loading',
-    //   spinner: 'el-icon-loading',
-    //   background: 'rgba(0, 0, 0, 0.7)'
-    // });
-    // if (response.data.meta.status == 200 || response.data.meta.status == 201 || response.data.meta.status == 204) {
-    //   load.close();
-    // }
+    $store.state.load=false
     return response
   },
   function (error) {

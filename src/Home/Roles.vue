@@ -202,14 +202,18 @@
         show-checkbox
         node-key="id"
         default-expand-all
+        check-on-click-node
+        current-node-key
+        :default-checked-keys="[101]"
+        ref="tree"
       >
         <span class="custom-tree-node" slot-scope="{ node, data }">
-          <span >{{ data.authName }}</span>
+          <span>{{ data.authName }}</span>
         </span>
       </el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogJur = false">取 消</el-button>
-        <el-button type="primary" @click="dialogJur = false">确 定</el-button>
+        <el-button type="primary" @click="getCheckedKeys">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -251,6 +255,10 @@ export default {
       dialogJur: false,
       // 所有的权限列表
       jurs: [],
+      // 修改用户权限
+      jur_str: "",
+      // 角色ID
+      roleID: "",
     };
   },
   created() {},
@@ -304,6 +312,7 @@ export default {
     async getRolse(id) {
       this.dialogUpdataRole = true;
       let { data: res } = await getrole(id);
+      console.log(res);
       if (res.meta.status == 200) {
         this.getroles = res.data;
       }
@@ -363,10 +372,23 @@ export default {
         });
     },
     async addRight(id) {
+      this.roleID = id;
       this.dialogJur = true;
       let { data: res } = await rights("tree");
       this.jurs = res.data;
-      console.log(this.jurs);
+    },
+    // 修改用户权限
+    async getCheckedKeys() {
+      // console.log(this.$refs.tree.getCheckedKeys());
+      this.jur_str = this.$refs.tree.getCheckedKeys().join(",");
+      let { data: res } = await addrights(this.roleID, { rids: this.jur_str });
+      if (res.meta.status == 200) {
+        this.$message.success(res.meta.msg);
+        this.roles()
+      } else {
+        this.$message.success(res.meta.msg);
+      }
+      this.dialogJur = false;
     },
   },
   watch: {

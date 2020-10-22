@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" v-loading='$store.state.load'>
     <router-view ></router-view>
   </div>
 </template>
